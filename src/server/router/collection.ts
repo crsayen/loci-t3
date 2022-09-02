@@ -29,3 +29,35 @@ export const collectionRouter = createProtectedRouter()
       }
     },
   })
+  .mutation('add', {
+    input: z.object({
+      collectionId: z.string(),
+      items: z.array(
+        z.object({
+          name: z.string(),
+          locus: z.object({
+            id: z.string(),
+            name: z.string(),
+          }),
+          locusName: z.string(),
+          count: z.number(),
+        })
+      ),
+    }),
+    async resolve({ ctx, input }) {
+      const data = input.items.map((i) => {
+        return {
+          name: i.name,
+          locusId: i.locus.id,
+          Locus: {
+            connectOrCreate: { where: { id: i.locus.id, name: i.locus.name } },
+          },
+          amount: i.count,
+        }
+      })
+
+      ctx.prisma.item.createMany({
+        data,
+      })
+    },
+  })
