@@ -1,8 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import cuid from 'cuid'
 import { useRouter } from 'next/router'
 import { ChangeEvent, Fragment, useState } from 'react'
-import { inputStyle } from './StyleProviders'
+import { inferMutationInput, trpc } from '../../utils/trpc'
+import { inputStyle } from '../StyleProviders'
 
 interface AddItemData {
   name: string
@@ -12,6 +14,7 @@ interface AddItemData {
 }
 
 type Props = {
+  collectionId: string
   open: boolean
   onClose: () => void
 }
@@ -20,13 +23,15 @@ const newItem = (): AddItemData => {
   return { name: '', count: 1, description: '', descriptionOpen: false }
 }
 
-export default function AddItemModal(props: Props) {
+export default function AddItemModal({ collectionId, open, onClose }: Props) {
+  const getLociQuery = trpc.useQuery(['collection.getLoci', { collectionId }])
+  const mutation = trpc.useMutation('collection.addItems')
   const router = useRouter()
   const [locus, setLocus] = useState<string>('')
   const [items, setItems] = useState<Array<AddItemData>>([newItem()])
 
   const handleEditItem = (i: number, property: keyof AddItemData, value: string) => {
-    const oldItem = items[i]
+    const oldItem = items[i] as AddItemData
 
     const newCount: number | '' = value == '' || isNaN(value as unknown as number) ? '' : parseInt(value)
 
@@ -45,33 +50,39 @@ export default function AddItemModal(props: Props) {
   const handleDeleteItem = (i: number) => setItems([...items.slice(0, i), ...items.slice(i + 1)])
 
   const handleDescriptionOpenChanged = (i: number) => {
-    const oldItem = items[i]
+    const oldItem = items[i] as AddItemData
     setItems([...items.slice(0, i), { ...oldItem, descriptionOpen: !oldItem.descriptionOpen }, ...items.slice(i + 1)])
   }
 
-  const handleSave = async () => {
-    const loci: Array<Item> = items
-      .filter((i) => i.name)
-      .map((i) => {
-        return {
-          name: i.name,
-          locations: [{ count: i.count == '' ? 1 : i.count, locus } as Locus],
-          description: i.description,
-        }
-      })
-
-    const path = `${['users', router.query.user, 'collections', router.query.loci, 'items']
-      //@ts-ignore
-      .map(encodeURIComponent)
-      .join('/')}`
-    await post<Array<Item>, any>(`${BASE_URI}/api/${path}`, loci, getIdTokenClaims)
-    props.onClose()
+  const getLocusNameAndId = (name: string) => {
+    return { name, id: getLociQuery?.data?.filter((l) => l.name == name)[0]?.id ?? cuid() }
   }
-  console.log(inputStyle('1/2'))
+
+  const handleSave = async () => {
+    const locusNameAndId = getLocusNameAndId(locus)
+    const loci: inferMutationInput<'collection.addItems'> = {
+      collectionId,
+      items: items
+        .filter((i) => i.name)
+        .map((i) => {
+          return {
+            name: i.name,
+            amount: i.count == '' ? 1 : i.count,
+            locus: {
+              id: locusNameAndId.id,
+              name: locusNameAndId.name,
+            },
+          }
+        }),
+    }
+
+    mutation.mutate(loci)
+    onClose()
+  }
 
   return (
-    <Transition.Root show={props.open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={props.onClose}>
+    <Transition.Root show={open} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -163,7 +174,7 @@ export default function AddItemModal(props: Props) {
                         </div>
                         <div className="flex flex-col">
                           <div className="relative"></div>
-                          {items[i].descriptionOpen && (
+                          {items[i]?.descriptionOpen && (
                             <div>
                               <label htmlFor={`item-description-${i}`} className="block text-sm font-medium text-white">
                                 Description
@@ -189,7 +200,7 @@ export default function AddItemModal(props: Props) {
                             </div>
                             <div className="relative flex justify-center">
                               <span className="bg-black px-2 text-neutal-700">
-                                {items[i].descriptionOpen ? (
+                                {items[i]?.descriptionOpen ? (
                                   <ChevronUpIcon className="mx-auto h-6 w-6" />
                                 ) : (
                                   <ChevronDownIcon className="mx-auto h-6 w-6" />

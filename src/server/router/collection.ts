@@ -16,11 +16,11 @@ export const collectionRouter = createProtectedRouter()
     },
   })
   .query('get', {
-    input: z.string().nullish(),
+    input: z.object({ collectionId: z.string() }).nullish(),
     async resolve({ ctx, input }) {
       return {
         collection: await ctx.prisma.collection.findFirst({
-          where: { id: input ?? undefined },
+          where: { id: input?.collectionId ?? undefined },
           select: {
             name: true,
             Locus: { select: { id: true, items: { select: { name: true, locusId: true, id: true } }, name: true } },
@@ -29,7 +29,16 @@ export const collectionRouter = createProtectedRouter()
       }
     },
   })
-  .mutation('add', {
+  .query('getLoci', {
+    input: z.object({ collectionId: z.string() }).nullish(),
+    async resolve({ ctx, input }) {
+      return await ctx.prisma.locus.findMany({
+        where: { collectionId: input?.collectionId ?? undefined },
+        select: { name: true, id: true },
+      })
+    },
+  })
+  .mutation('addItems', {
     input: z.object({
       collectionId: z.string(),
       items: z.array(
@@ -39,8 +48,7 @@ export const collectionRouter = createProtectedRouter()
             id: z.string(),
             name: z.string(),
           }),
-          locusName: z.string(),
-          count: z.number(),
+          amount: z.number(),
         })
       ),
     }),
@@ -52,7 +60,7 @@ export const collectionRouter = createProtectedRouter()
           Locus: {
             connectOrCreate: { where: { id: i.locus.id, name: i.locus.name } },
           },
-          amount: i.count,
+          amount: i.amount,
         }
       })
 
