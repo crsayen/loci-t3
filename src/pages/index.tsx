@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import Main from '../components/Layout/Main'
-import UsersPage from './users'
+import UsersPage from './user'
 
 const Home: NextPage = () => {
   return (

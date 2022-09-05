@@ -7,8 +7,8 @@ import { env } from '../../env/client.mjs'
 import { trpc } from '../../utils/trpc'
 
 export default function CollectionsPage() {
-  const { isLoading, data } = trpc.useQuery(['collection.getAll'])
   const router = useRouter()
+  const { isLoading, data } = trpc.useQuery(['collections.getAll'])
   const [canEdit, setCanEdit] = useState<boolean>(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false)
   const [addLociModalOpen, setAddLociModalOpen] = useState<boolean>(false)

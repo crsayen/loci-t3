@@ -59,18 +59,19 @@ model Collection {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  Locus     Locus[]
+  loci      Locus[]
 
   @@unique([ownerId, name], map: "owner_collection_unique")
 }
 
 model Item {
-  id        String   @id @default(cuid())
-  name      String
-  amount    Int
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  locusId   String
-  locus     Locus    @relation(fields: [locusId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  amount      Int
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  locusId     String
+  locus       Locus    @relation(fields: [locusId], references: [id], onDelete: Cascade)
 
   @@unique([locusId, name], map: "locus_item_unique")
 }
@@ -112,7 +113,7 @@ model Locus {
   id           String     @id @default(cuid())
   name         String
   collectionId String
-  Collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   items        Item[]
 
   @@unique([collectionId, name], map: "collection_locus_unique")
