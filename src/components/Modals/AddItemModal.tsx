@@ -1,14 +1,14 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import cuid from 'cuid'
-import { useRouter } from 'next/router'
 import { ChangeEvent, Fragment, useState } from 'react'
-import { inferMutationInput, trpc } from '../../utils/trpc'
+import { useQueryClient } from 'react-query'
+import { trpc } from '../../utils/trpc'
+import SearchBox from '../Elements/SearchBox'
 import { inputStyle } from '../StyleProviders'
 
 interface AddItemData {
   name: string
-  count: number | ''
+  amount: number | ''
   description: string
   descriptionOpen: boolean
 }
@@ -20,14 +20,24 @@ type Props = {
 }
 
 const newItem = (): AddItemData => {
-  return { name: '', count: 1, description: '', descriptionOpen: false }
+  return {
+    name: '',
+    amount: 1,
+    description: '',
+    descriptionOpen: false,
+  }
 }
 
 export default function AddItemModal({ collectionId, open, onClose }: Props) {
-  const getLociQuery = trpc.useQuery(['collection.getLoci', { collectionId }])
-  const mutation = trpc.useMutation('collection.addItems')
-  const router = useRouter()
-  const [locus, setLocus] = useState<string>('')
+  const queryClient = useQueryClient()
+  const lociQuery = trpc.useQuery(['loci.getAllForCollection', { collectionId }])
+  const addItemsMutation = trpc.useMutation('loci.addItems', {
+    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
+  })
+  const createLocusMutation = trpc.useMutation('loci.create', {
+    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
+  })
+  const [locus, setLocus] = useState<{ name: string; id?: string } | undefined>()
   const [items, setItems] = useState<Array<AddItemData>>([newItem()])
 
   const handleEditItem = (i: number, property: keyof AddItemData, value: string) => {
@@ -36,8 +46,8 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
     const newCount: number | '' = value == '' || isNaN(value as unknown as number) ? '' : parseInt(value)
 
     const newItem =
-      property == 'count'
-        ? { ...oldItem, count: newCount }
+      property == 'amount'
+        ? { ...oldItem, amoung: newCount }
         : property == 'description'
         ? { ...oldItem, description: value }
         : { ...oldItem, name: value }
@@ -54,29 +64,30 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
     setItems([...items.slice(0, i), { ...oldItem, descriptionOpen: !oldItem.descriptionOpen }, ...items.slice(i + 1)])
   }
 
-  const getLocusNameAndId = (name: string) => {
-    return { name, id: getLociQuery?.data?.filter((l) => l.name == name)[0]?.id ?? cuid() }
-  }
-
   const handleSave = async () => {
-    const locusNameAndId = getLocusNameAndId(locus)
-    const loci: inferMutationInput<'collection.addItems'> = {
-      collectionId,
-      items: items
-        .filter((i) => i.name)
-        .map((i) => {
-          return {
-            name: i.name,
-            amount: i.count == '' ? 1 : i.count,
-            locus: {
-              id: locusNameAndId.id,
-              name: locusNameAndId.name,
-            },
-          }
-        }),
+    const locusItems = items
+      .filter((i) => i.name)
+      .map((i) => {
+        return {
+          name: i.name,
+          amount: i.amount == '' ? 1 : i.amount,
+          description: i.description,
+        }
+      })
+    const { name, id } = locus as { name: string; id: string | undefined }
+    if (!id) {
+      createLocusMutation.mutate({
+        name,
+        collectionId,
+        items: locusItems,
+      })
+    } else {
+      addItemsMutation.mutate({
+        locusId: id,
+        items: locusItems,
+      })
     }
-
-    mutation.mutate(loci)
+    1
     onClose()
   }
 
@@ -88,7 +99,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in duration-200"
+          leave="ease-in duration-50"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
@@ -102,7 +113,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
               enter="ease-out duration-300"
               enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
+              leave="ease-in duration-50"
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
@@ -111,16 +122,12 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
                   <label htmlFor="locus" className="block text-sm font-medium text-white">
                     Locus
                   </label>
-                  <div className="mt-1">
-                    <input
-                      type="text"
-                      name="locus"
-                      id="locus"
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => setLocus(event.target.value)}
-                      className={inputStyle()}
-                      placeholder="Where?"
-                    />
-                  </div>
+                  <SearchBox
+                    items={lociQuery?.data?.map((i) => ({ name: i.name, id: i.id })) ?? []}
+                    onSelect={setLocus}
+                    onTextChange={(name) => setLocus({ name })}
+                    placeholder="Where?"
+                  />
                 </div>
                 <div>
                   {items.map((item, i) => {
@@ -154,9 +161,9 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
                                 type="text"
                                 name={`item-count-${i}`}
                                 id={`item-count-${i}`}
-                                value={item.count}
+                                value={item.amount}
                                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                                  handleEditItem(i, 'count', event.target.value)
+                                  handleEditItem(i, 'amount', event.target.value)
                                 }
                                 className={inputStyle()}
                               />
@@ -226,7 +233,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
                   <button
                     type="button"
                     className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
-                    onClick={handleSave}
+                    onClick={locus ? handleSave : undefined}
                   >
                     Save
                   </button>

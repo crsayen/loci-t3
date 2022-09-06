@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --colorsnap: #8c879e;
+  --colorcrackle: #bfb4d8;
+  --colorpop: #cdb8ff;
+}
+
 html, body {
   margin: 0;
   height: 100%;
@@ -26,8 +32,8 @@ body {
     height: 64px;
     margin: 8px;
     border-radius: 50%;
-    border: 6px solid #fff;
-    border-color: #fff transparent #fff transparent;
+    border: 6px solid var(--colorpop);
+    border-color: var(--colorpop) transparent var(--colorpop) transparent;
     animation: lds-dual-ring 1.2s linear infinite;
   }
   @keyframes lds-dual-ring {
@@ -72,4 +78,16 @@ body {
   grid-template-areas:
   "header header header"
   "left main right"
+}
+
+.colorsnap {
+  color: var(--colorsnap);
+}
+
+.colorcrackle {
+  color: var(--colorcrackle);
+}
+
+.colorpop {
+  color: var(--colorpop);
 }
