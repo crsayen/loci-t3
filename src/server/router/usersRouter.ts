@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { addCollectionToUser, getAllUsers } from '../db/repository/user'
-import { createProtectedRouter } from './utility/protected-router'
+import { createRouter } from './utility/context'
 
-export const usersRouter = createProtectedRouter()
+export const usersRouter = createRouter()
   .query('getAll', {
     async resolve({ ctx }) {
       return await getAllUsers(ctx.prisma)

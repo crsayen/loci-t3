@@ -12,6 +12,7 @@ import { useQueryClient } from 'react-query'
 import { useSession } from 'next-auth/react'
 import { useLoading } from '../../components/Context/LoadingContext'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
+import AlertModal from '../../components/Modals/AlertModal'
 
 export default function ItemsPage() {
   const [parent] = useAutoAnimate<HTMLDivElement>()
@@ -28,6 +29,7 @@ export default function ItemsPage() {
   const [fuse, setFuse] = useState<Fuse<inferQueryOutput<'items.getAllForCollection'>[number]>>()
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
   const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false)
+  const [alertModalOpen, setAlertModalOpen] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false)
   const [itemToDelete, setItemToDelete] = useState<{ name: string; id: string } | undefined>()
@@ -80,6 +82,7 @@ export default function ItemsPage() {
 
   return (
     <Main>
+      <AlertModal open={alertModalOpen} onClose={() => setAlertModalOpen(false)} message="Nothing here yet!!1" />
       <ConfirmationModal open={confirmDeleteOpen} onClose={handleConfirm} message={`Delete "${itemToDelete?.name}"?`} />
       {canEdit && (
         <AddItemModal open={addItemModalOpen} collectionId={collectionId} onClose={() => setAddItemModalOpen(false)} />
@@ -102,16 +105,20 @@ export default function ItemsPage() {
             </div>
           )}
           <div>
-            <button
-              type="button"
-              className="inline-flex items-center p-1 border border-transparent 
+            {canEdit && (
+              <button
+                type="button"
+                className="inline-flex items-center p-1 border border-transparent 
               rounded-full shadow-sm text-white bg-white 
               hover:bg-neutral-300 focus:outline-none focus:ring-2 
-              focus:ring-offset-1 focus:ring-neutral-500"
-              onClick={() => setAddItemModalOpen(true)}
-            >
-              <PlusIcon className="h-3 w-3" stroke="#000000" />
-            </button>
+              focus:ring-offset-1 focus:ring-neutral-500 disabled:outline-none 
+              disabled:hover:bg-neutral-500 disabled:bg-neutral-500"
+                disabled={!canEdit}
+                onClick={canEdit ? () => setAddItemModalOpen(true) : undefined}
+              >
+                <PlusIcon className="h-3 w-3" stroke="#000000" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -120,21 +127,22 @@ export default function ItemsPage() {
           {(filteredItems ?? itemsQuery.data)?.map((item) => (
             <div key={item.id}>
               <div className="flex flex-row">
-                <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}>
-                  <div
-                    className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
+                {/* <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}> */}
+                <div
+                  className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
                   cursor-pointer rounded-lg hover:bg-gradient-to-r 
                   hover:to-black hover:from-neutral-800 flex flex-col md:flex-row"
-                  >
-                    <div>{item.name}</div>
-                    <div className="colorsnap font-thin md:items-center flex flex-col md:flex-row pl-0 md:pl-1 items-start">
-                      <ChevronRightIcon className=" h-4 w-4 hidden md:block" />
-                      <div className="sm:pl-1">{item.locus.name}</div>
-                    </div>
+                  onClick={() => setAlertModalOpen(true)}
+                >
+                  <div>{item.name}</div>
+                  <div className="colorsnap font-thin md:items-center flex flex-col md:flex-row pl-0 md:pl-1 items-start">
+                    <ChevronRightIcon className=" h-4 w-4 hidden md:block" />
+                    <div className="sm:pl-1">{item.locus.name}</div>
                   </div>
-                </Link>
+                </div>
+                {/* </Link> */}
                 {canEdit && (
-                  <div className="ml-3 mt-2">
+                  <div className=" ml-3 mt-2">
                     <button
                       type="button"
                       className="inline-flex items-center p-1 rounded-full shadow-sm bg-black 

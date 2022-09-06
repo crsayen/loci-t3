@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { addItemsToLoci, createLoci, getAllLociInCollection } from '../db/repository/locus'
-import { createProtectedRouter } from './utility/protected-router'
 import { ensureIsResourceOwner } from '../security/authorization'
+import { createRouter } from './utility/context'
 
-export const lociRouter = createProtectedRouter()
+export const lociRouter = createRouter()
   .query('getAllForCollection', {
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {

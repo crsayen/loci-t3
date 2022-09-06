@@ -6,9 +6,9 @@ import {
   updateItem,
 } from '../db/repository/item'
 import { ensureIsResourceOwner } from '../security/authorization'
-import { createProtectedRouter } from './utility/protected-router'
+import { createRouter } from './utility/context'
 
-export const itemsRouter = createProtectedRouter()
+export const itemsRouter = createRouter()
   .query('getAllForLocus', {
     input: z.object({ locusId: z.string() }),
     async resolve({ ctx, input }) {

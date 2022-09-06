@@ -5,10 +5,10 @@ import {
   getAllCollectionsForUser,
   getCollection,
 } from '../db/repository/collection'
-import { createProtectedRouter } from './utility/protected-router'
 import { ensureIsResourceOwner } from '../security/authorization'
+import { createRouter } from './utility/context'
 
-export const collectionsRouter = createProtectedRouter()
+export const collectionsRouter = createRouter()
   .query('get', {
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {
