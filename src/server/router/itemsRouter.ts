@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  deleteItem,
   getAllItemsFromCollection,
   getAllItemsFromLocus,
   updateItem,
@@ -33,5 +34,13 @@ export const itemsRouter = createProtectedRouter()
     }),
     async resolve({ ctx, input }) {
       return await updateItem(ctx.prisma, input.itemId, input.data)
+    },
+  })
+  .mutation('delete', {
+    input: z.object({
+      itemId: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      return await deleteItem(ctx.prisma, input.itemId)
     },
   })

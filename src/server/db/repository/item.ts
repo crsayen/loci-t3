@@ -37,3 +37,7 @@ export async function updateItem(
 ) {
   prisma.item.update({ where: { id }, data })
 }
+
+export async function deleteItem(prisma: PrismaClient, id: string) {
+  prisma.item.delete({ where: { id } })
+}

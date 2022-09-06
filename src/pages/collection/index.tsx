@@ -70,7 +70,7 @@ export default function CollectionsPage() {
           items={data.map((c) => {
             return {
               text: c.name,
-              path: `${env.NEXT_PUBLIC_BASE_URI}/collections/${c.id}`,
+              path: `${env.NEXT_PUBLIC_BASE_URI}/collection/${c.id}`,
             }
           })}
           onDelete={canEdit ? handleDeleteItem : undefined}

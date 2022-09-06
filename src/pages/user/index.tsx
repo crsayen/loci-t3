@@ -33,7 +33,7 @@ export default function UsersPage() {
   return (
     <NavList
       items={data.map((u) => {
-        const path = `${env.NEXT_PUBLIC_BASE_URI}/collections`
+        const path = `${env.NEXT_PUBLIC_BASE_URI}/collection`
         return {
           text: u.name ?? 'some user',
           path,

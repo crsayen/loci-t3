@@ -43,3 +43,18 @@ export async function addItemsToLoci(
     data: { items: { createMany: { data: items } } },
   })
 }
+
+export async function createLoci(
+  prisma: PrismaClient,
+  collectionId: string,
+  name: string,
+  items: Items
+) {
+  await prisma.locus.create({
+    data: {
+      name,
+      collectionId,
+      items: { createMany: { data: items } },
+    },
+  })
+}
