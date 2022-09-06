@@ -43,11 +43,11 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
   const handleEditItem = (i: number, property: keyof AddItemData, value: string) => {
     const oldItem = items[i] as AddItemData
 
-    const newCount: number | '' = value == '' || isNaN(value as unknown as number) ? '' : parseInt(value)
+    const newAmount: number | '' = value == '' || isNaN(value as unknown as number) ? '' : parseInt(value)
 
     const newItem =
       property == 'amount'
-        ? { ...oldItem, amoung: newCount }
+        ? { ...oldItem, amount: newAmount }
         : property == 'description'
         ? { ...oldItem, description: value }
         : { ...oldItem, name: value }
@@ -153,14 +153,14 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
                             </div>
                           </div>
                           <div>
-                            <label htmlFor={`item-count-${i}`} className="block text-sm font-medium text-white">
+                            <label htmlFor={`item-amount-${i}`} className="block text-sm font-medium">
                               Count
                             </label>
                             <div>
                               <input
                                 type="text"
-                                name={`item-count-${i}`}
-                                id={`item-count-${i}`}
+                                name={`item-amount-${i}`}
+                                id={`item-amount-${i}`}
                                 value={item.amount}
                                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                   handleEditItem(i, 'amount', event.target.value)
