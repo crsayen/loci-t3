@@ -5,6 +5,7 @@ import {
   getAllItemsFromLocus,
   updateItem,
 } from '../db/repository/item'
+import { ensureIsResourceOwner } from '../security/authorization'
 import { createProtectedRouter } from './utility/protected-router'
 
 export const itemsRouter = createProtectedRouter()
@@ -17,10 +18,7 @@ export const itemsRouter = createProtectedRouter()
   .query('getAllForCollection', {
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {
-      return await getAllItemsFromCollection(
-        ctx.prisma,
-        input.collectionId
-      )
+      return await getAllItemsFromCollection(ctx.prisma, input.collectionId)
     },
   })
   .mutation('update', {
@@ -33,6 +31,7 @@ export const itemsRouter = createProtectedRouter()
       }),
     }),
     async resolve({ ctx, input }) {
+      await ensureIsResourceOwner(ctx, input.itemId, 'item')
       return await updateItem(ctx.prisma, input.itemId, input.data)
     },
   })
@@ -41,6 +40,7 @@ export const itemsRouter = createProtectedRouter()
       itemId: z.string(),
     }),
     async resolve({ ctx, input }) {
+      await ensureIsResourceOwner(ctx, input.itemId, 'item')
       return await deleteItem(ctx.prisma, input.itemId)
     },
   })

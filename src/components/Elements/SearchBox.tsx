@@ -41,12 +41,10 @@ export default function Search(props: {
           className={inputStyle()}
           placeholder={props.placeholder ?? 'Search'}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            console.log('chchchc', event.target.value)
             props.onTextChange && props.onTextChange(event.target.value)
             setQuery(event.target.value)
           }}
           displayValue={(item: string) => {
-            console.log('iytt', item)
             return item as string
           }}
         />

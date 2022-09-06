@@ -1,16 +1,10 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 
-export async function getAllLociInCollection(
-  prisma: PrismaClient,
-  collectionId: string
-) {
+export async function getAllLociInCollection(prisma: PrismaClient, collectionId: string) {
   return await getAllLociWhere(prisma, { collectionId })
 }
 
-async function getAllLociWhere(
-  prisma: PrismaClient,
-  where: Prisma.LocusWhereInput
-) {
+async function getAllLociWhere(prisma: PrismaClient, where: Prisma.LocusWhereInput) {
   return await await prisma.locus.findMany({
     where,
     select: {
@@ -33,12 +27,8 @@ type Items = {
   description: string
 }[]
 
-export async function addItemsToLoci(
-  prisma: PrismaClient,
-  id: string,
-  items: Items
-) {
-  await prisma.locus.update({
+export async function addItemsToLoci(prisma: PrismaClient, id: string, items: Items) {
+  return await prisma.locus.update({
     where: { id },
     data: { items: { createMany: { data: items } } },
   })
@@ -50,7 +40,7 @@ export async function createLoci(
   name: string,
   items: Items
 ) {
-  await prisma.locus.create({
+  return await prisma.locus.create({
     data: {
       name,
       collectionId,

@@ -1,19 +1,13 @@
 import { z } from 'zod'
-import {
-  addItemsToLoci,
-  createLoci,
-  getAllLociInCollection,
-} from '../db/repository/locus'
+import { addItemsToLoci, createLoci, getAllLociInCollection } from '../db/repository/locus'
 import { createProtectedRouter } from './utility/protected-router'
+import { ensureIsResourceOwner } from '../security/authorization'
 
 export const lociRouter = createProtectedRouter()
   .query('getAllForCollection', {
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {
-      return await getAllLociInCollection(
-        ctx.prisma,
-        input.collectionId
-      )
+      return await getAllLociInCollection(ctx.prisma, input.collectionId)
     },
   })
   .mutation('addItems', {
@@ -28,11 +22,8 @@ export const lociRouter = createProtectedRouter()
       ),
     }),
     async resolve({ ctx, input }) {
-      return await addItemsToLoci(
-        ctx.prisma,
-        input.locusId,
-        input.items
-      )
+      await ensureIsResourceOwner(ctx, input.locusId, 'locus')
+      return await addItemsToLoci(ctx.prisma, input.locusId, input.items)
     },
   })
   .mutation('create', {
@@ -48,11 +39,7 @@ export const lociRouter = createProtectedRouter()
       ),
     }),
     async resolve({ ctx, input }) {
-      return await createLoci(
-        ctx.prisma,
-        input.collectionId,
-        input.name,
-        input.items
-      )
+      await ensureIsResourceOwner(ctx, input.collectionId, 'collection')
+      return await createLoci(ctx.prisma, input.collectionId, input.name, input.items)
     },
   })

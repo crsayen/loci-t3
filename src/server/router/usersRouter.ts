@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import {
-  addCollectionToUser,
-  getAllUsers,
-} from '../db/repository/user'
+import { addCollectionToUser, getAllUsers } from '../db/repository/user'
 import { createProtectedRouter } from './utility/protected-router'
 
 export const usersRouter = createProtectedRouter()
@@ -17,10 +14,6 @@ export const usersRouter = createProtectedRouter()
       collectionName: z.string(),
     }),
     async resolve({ ctx, input }) {
-      await addCollectionToUser(
-        ctx.prisma,
-        input.userId,
-        input.collectionName
-      )
+      return await addCollectionToUser(ctx.prisma, input.userId, input.collectionName)
     },
   })

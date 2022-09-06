@@ -32,16 +32,10 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
   const queryClient = useQueryClient()
   const lociQuery = trpc.useQuery(['loci.getAllForCollection', { collectionId }])
   const addItemsMutation = trpc.useMutation('loci.addItems', {
-    onSuccess: () => {
-      console.log('didddur')
-      queryClient.invalidateQueries(['items', 'loci'])
-    },
+    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
   })
   const createLocusMutation = trpc.useMutation('loci.create', {
-    onSuccess: () => {
-      console.log('didddur')
-      queryClient.invalidateQueries(['items', 'loci'])
-    },
+    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
   })
   const [locus, setLocus] = useState<{ name: string; id?: string } | undefined>()
   const [items, setItems] = useState<Array<AddItemData>>([newItem()])
@@ -82,14 +76,12 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
       })
     const { name, id } = locus as { name: string; id: string | undefined }
     if (!id) {
-      console.log('create locus', locus)
       createLocusMutation.mutate({
         name,
         collectionId,
         items: locusItems,
       })
     } else {
-      console.log('create update locus', locus)
       addItemsMutation.mutate({
         locusId: id,
         items: locusItems,
@@ -107,7 +99,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in duration-200"
+          leave="ease-in duration-50"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
@@ -121,7 +113,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
               enter="ease-out duration-300"
               enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
+              leave="ease-in duration-50"
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >

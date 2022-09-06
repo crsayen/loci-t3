@@ -1,4 +1,4 @@
-import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PlusIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Main from '../../components/Layout/Main'
@@ -8,25 +8,36 @@ import { inferQueryOutput, trpc } from '../../utils/trpc'
 import AddItemModal from '../../components/Modals/AddItemModal'
 import ConfirmationModal from '../../components/Modals/ConfirmationModal'
 import Link from 'next/link'
+import { useQueryClient } from 'react-query'
+import { useSession } from 'next-auth/react'
+import { useLoading } from '../../components/Context/LoadingContext'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 
 export default function ItemsPage() {
+  const [parent] = useAutoAnimate<HTMLDivElement>()
+  const { setLoading } = useLoading()
+  const session = useSession()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const collectionId = router.query.collection as string
   const itemsQuery = trpc.useQuery(['items.getAllForCollection', { collectionId }])
-  const deleteItemMutation = trpc.useMutation('items.delete')
+  const collectionQuery = trpc.useQuery(['collections.get', { collectionId }])
+  const deleteItemMutation = trpc.useMutation('items.delete', {
+    onSuccess: () => queryClient.invalidateQueries('items.getAllForCollection'),
+  })
   const [fuse, setFuse] = useState<Fuse<inferQueryOutput<'items.getAllForCollection'>[number]>>()
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
   const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false)
   const [itemToDelete, setItemToDelete] = useState<{ name: string; id: string } | undefined>()
+  const [canEdit, setCanEdit] = useState<boolean>(false)
 
   useEffect(() => {
-    console.log('didddur chchch')
     const show = (itemsQuery?.data?.length ?? 0) > 10
     setShowSearch(show)
     if (show) {
-      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'] })
+      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'], threshold: 0.3, distance: 100 })
       setFuse(fuse)
     }
   }, [itemsQuery.data])
@@ -52,18 +63,27 @@ export default function ItemsPage() {
 
   const handleConfirm = (confirmed: boolean) => {
     const { id } = itemToDelete as { id: string }
+    setConfirmDeleteOpen(false)
     setItemToDelete(undefined)
+    setFilteredItems(undefined)
     if (!confirmed) return
     deleteItemMutation.mutate({ itemId: id })
   }
 
-  //TODO: this sucks. do good stuff
-  if (itemsQuery.isLoading) return <>loading...</>
+  useEffect(() => {
+    setCanEdit(session.data?.user?.id === collectionQuery.data?.owner.id)
+  }, [session.data?.user?.id, collectionQuery.data?.owner.id])
+
+  useEffect(() => {
+    setLoading(itemsQuery.isLoading)
+  }, [itemsQuery.isLoading, setLoading])
 
   return (
     <Main>
       <ConfirmationModal open={confirmDeleteOpen} onClose={handleConfirm} message={`Delete "${itemToDelete?.name}"?`} />
-      <AddItemModal open={addItemModalOpen} collectionId={collectionId} onClose={() => setAddItemModalOpen(false)} />
+      {canEdit && (
+        <AddItemModal open={addItemModalOpen} collectionId={collectionId} onClose={() => setAddItemModalOpen(false)} />
+      )}
       <div
         className="-mt-1 absolute mx-auto py-2 z-10 flex flex-row items-end 
       gap-5 justify-start bg-black w-full pr-auto"
@@ -95,8 +115,8 @@ export default function ItemsPage() {
           </div>
         </div>
       </div>
-      <div className="mt-20">
-        <div>
+      <div className="mt-15">
+        <div ref={parent}>
           {(filteredItems ?? itemsQuery.data)?.map((item) => (
             <div key={item.id}>
               <div className="flex flex-row">
@@ -104,22 +124,28 @@ export default function ItemsPage() {
                   <div
                     className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
                   cursor-pointer rounded-lg hover:bg-gradient-to-r 
-                  hover:to-black hover:from-neutral-800"
+                  hover:to-black hover:from-neutral-800 flex flex-col md:flex-row"
                   >
-                    {item.name}
+                    <div>{item.name}</div>
+                    <div className="colorsnap font-thin md:items-center flex flex-col md:flex-row pl-0 md:pl-1 items-start">
+                      <ChevronRightIcon className=" h-4 w-4 hidden md:block" />
+                      <div className="sm:pl-1">{item.locus.name}</div>
+                    </div>
                   </div>
                 </Link>
-                <div className="ml-3 mt-2">
-                  <button
-                    type="button"
-                    className="inline-flex items-center p-1 rounded-full shadow-sm bg-black 
+                {canEdit && (
+                  <div className="ml-3 mt-2">
+                    <button
+                      type="button"
+                      className="inline-flex items-center p-1 rounded-full shadow-sm bg-black 
                     hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-1 
                     focus:ring-neutral-800"
-                    onClick={() => handleDeleteItem(item.id, item.name)}
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </div>
+                      onClick={() => handleDeleteItem(item.id, item.name)}
+                    >
+                      <XMarkIcon className="colorpop h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
