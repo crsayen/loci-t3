@@ -39,7 +39,7 @@ export default function ItemsPage() {
     const show = (itemsQuery?.data?.length ?? 0) > 10
     setShowSearch(show)
     if (show) {
-      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'], threshold: 0.3, distance: 100 })
+      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'], threshold: 0.8, distance: 100 })
       setFuse(fuse)
     }
   }, [itemsQuery.data])
