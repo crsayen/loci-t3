@@ -16,6 +16,7 @@ async function getAllItemsWhere(prisma: PrismaClient, where: Prisma.ItemWhereInp
       id: true,
       createdAt: true,
       amount: true,
+      amountCheckedOut: true,
       locus: { select: { id: true, name: true } },
     },
   })

@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --colorsnap: #8c879e;
-  --colorcrackle: #bfb4d8;
-  --colorpop: #cdb8ff;
-}
-
 html, body {
   margin: 0;
   height: 100%;
@@ -78,18 +72,6 @@ body {
   grid-template-areas:
   "header header header"
   "left main right"
-}
-
-.colorsnap {
-  color: var(--colorsnap);
-}
-
-.colorcrackle {
-  color: var(--colorcrackle);
-}
-
-.colorpop {
-  color: var(--colorpop);
 }
 
 .blink {

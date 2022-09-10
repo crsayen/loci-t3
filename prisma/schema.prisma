@@ -65,13 +65,14 @@ model Collection {
 }
 
 model Item {
-  id          String   @id @default(cuid())
-  name        String
-  description String   @default("")
-  amount      Int
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-  locusId     String
-  locus       Locus    @relation(fields: [locusId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  name             String
+  description      String   @default("")
+  amount           Int
+  createdAt        DateTime @default(now()) @db.Timestamp(6)
+  amountCheckedOut Int      @default(0)
+  locusId          String
+  locus            Locus    @relation(fields: [locusId], references: [id], onDelete: Cascade)
 
   @@unique([locusId, name], map: "locus_item_unique")
 }

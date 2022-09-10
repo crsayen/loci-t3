@@ -135,6 +135,7 @@ export default function AddItemModal({ collectionId, open, onClose }: Props) {
                       <div key={i}>
                         <div className="flex flex-row gap-3 pt-3">
                           <div>
+                            {/* TODO: limit length of name and add validation logic */}
                             <label htmlFor={`item-${i}`} className="block text-sm font-medium text-white">
                               Name
                             </label>

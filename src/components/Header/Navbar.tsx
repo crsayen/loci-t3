@@ -8,7 +8,7 @@ export default function Navbar() {
       <div>
         <LoginButton />
       </div>
-      {session !== null && <div className="colorpop h-min text-xs">{session?.user?.name}</div>}
+      {session !== null && <div className="text-violet-300 h-min text-xs">{session?.user?.name}</div>}
     </div>
   )
 }

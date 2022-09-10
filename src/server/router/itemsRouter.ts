@@ -28,6 +28,7 @@ export const itemsRouter = createRouter()
         name: z.string().optional(),
         description: z.string().optional(),
         amount: z.number().positive().int().optional(),
+        amountCheckedOut: z.number().positive().int().optional(),
       }),
     }),
     async resolve({ ctx, input }) {

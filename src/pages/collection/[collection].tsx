@@ -1,18 +1,17 @@
-import { PlusIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Main from '../../components/Layout/Main'
 import Fuse from 'fuse.js'
-import { env } from '../../env/client.mjs'
 import { inferQueryOutput, trpc } from '../../utils/trpc'
 import AddItemModal from '../../components/Modals/AddItemModal'
 import ConfirmationModal from '../../components/Modals/ConfirmationModal'
-import Link from 'next/link'
 import { useQueryClient } from 'react-query'
 import { useSession } from 'next-auth/react'
 import { useLoading } from '../../components/Context/LoadingContext'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import AlertModal from '../../components/Modals/AlertModal'
+import { CheckedOutBadge, LocusBadge } from '../../components/collection/LocusBadge'
 
 export default function ItemsPage() {
   const [parent] = useAutoAnimate<HTMLDivElement>()
@@ -130,17 +129,21 @@ export default function ItemsPage() {
                 {/* <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}> */}
                 <div
                   className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
-                  cursor-pointer rounded-lg hover:bg-gradient-to-r 
-                  hover:to-black hover:from-neutral-800 flex flex-col md:flex-row"
+                  cursor-pointer rounded-lg hover:bg-gradient-to-r md:items-center gap-1
+                  hover:to-black hover:from-neutral-800 flex flex-col md:flex-row text-sm md:text-base"
                   onClick={() => setAlertModalOpen(true)}
                 >
-                  <div>{item.name}</div>
-                  <div className="colorsnap font-thin md:items-center flex flex-col md:flex-row pl-0 md:pl-1 items-start">
-                    <ChevronRightIcon className=" h-4 w-4 hidden md:block" />
-                    <div className="sm:pl-1">{item.locus.name}</div>
+                  <p>{item.name}</p>
+                  <div className="flex flex-row md:items-center">
+                    {/* <ArrowSmallRightIcon className="text-violet-300 h-4 w-4 hidden md:block" /> */}
+                    {item.amountCheckedOut > 0 && (
+                      <div className="pr-2">
+                        <CheckedOutBadge amount={item.amount - 1} />
+                      </div>
+                    )}
+                    <LocusBadge name={item.locus.name} amount={item.amount} />
                   </div>
                 </div>
-                {/* </Link> */}
                 {canEdit && (
                   <div className=" ml-3 mt-2">
                     <button
