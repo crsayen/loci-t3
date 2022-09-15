@@ -132,8 +132,8 @@ export default function ItemsPage() {
                 {/* <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}> */}
                 <div
                   className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
-                  cursor-pointer rounded-lg hover:bg-gradient-to-r md:items-center gap-1
-                  hover:to-black hover:from-neutral-800 flex flex-col md:flex-row text-sm md:text-base"
+                  cursor-pointer hover:bg-gradient-to-r md:items-center gap-1
+                  hover:to-black hover:from-neutral-900 flex flex-col md:flex-row text-sm md:text-base"
                   onClick={() => setAlertModalOpen(true)}
                 >
                   <p>{item.name}</p>
