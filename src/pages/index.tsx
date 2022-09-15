@@ -1,13 +1,8 @@
 import type { NextPage } from 'next'
-import Main from '../components/Layout/Main'
-import UsersPage from './user'
+import CollectionsPage from './collection'
 
 const Home: NextPage = () => {
-  return (
-    <Main>
-      <UsersPage />
-    </Main>
-  )
+  return <CollectionsPage />
 }
 
 export default Home

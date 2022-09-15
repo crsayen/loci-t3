@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import {
   addLociToCollection,
+  deleteCollection,
   getAllCollections,
   getAllCollectionsForUser,
   getCollection,
@@ -38,5 +39,14 @@ export const collectionsRouter = createRouter()
     async resolve({ ctx, input }) {
       await ensureIsResourceOwner(ctx, input.collectionId, 'collection')
       if (ctx) return await addLociToCollection(ctx.prisma, input.collectionId, input.loci)
+    },
+  })
+  .mutation('delete', {
+    input: z.object({
+      collectionId: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      await ensureIsResourceOwner(ctx, input.collectionId, 'collection')
+      if (ctx) return await deleteCollection(ctx.prisma, input.collectionId)
     },
   })

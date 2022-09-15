@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import LoginButton from './LoginButton'
 
 export default function Navbar() {
@@ -8,7 +9,13 @@ export default function Navbar() {
       <div>
         <LoginButton />
       </div>
-      {session !== null && <div className="text-violet-300 h-min text-xs">{session?.user?.name}</div>}
+      {session !== null && (
+        <Link href={'/'}>
+          <div className="text-violet-300 h-min text-xs cursor-pointer hover:text-violet-200 px-1">
+            {session?.user?.name}
+          </div>
+        </Link>
+      )}
     </div>
   )
 }

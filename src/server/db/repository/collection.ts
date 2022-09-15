@@ -43,3 +43,9 @@ export async function addLociToCollection(prisma: PrismaClient, id: string, loci
     data: { loci: { createMany: { data: loci } } },
   })
 }
+
+export async function deleteCollection(prisma: PrismaClient, id: string) {
+  return await prisma.collection.delete({
+    where: { id },
+  })
+}

@@ -40,3 +40,44 @@ export async function addCollectionToUser(prisma: PrismaClient, id: string, name
     data: { collections: { create: { name } } },
   })
 }
+
+export async function getUserRolesAndPermissions(
+  prisma: PrismaClient,
+  id: string
+): Promise<{ roles: string[]; permissions: string[] }> {
+  const user = await prisma.user.findFirst({
+    where: { id },
+    select: {
+      userRoles: {
+        select: {
+          role: {
+            select: {
+              name: true,
+              rolePermissions: {
+                select: { permission: { select: { authority: true } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  const roles = user?.userRoles.map((userRole) => userRole.role.name) ?? []
+  const permissions =
+    user?.userRoles.flatMap((userRole) =>
+      userRole.role.rolePermissions.map((rolePermission) => rolePermission.permission.authority)
+    ) ?? []
+
+  return { roles, permissions }
+}
+
+export async function grantUsersOwnRole(prisma: PrismaClient, id: string) {
+  return await prisma.user.update({
+    where: { id },
+    data: {
+      userRoles: {
+        create: { role: { create: { name: id } } },
+      },
+    },
+  })
+}

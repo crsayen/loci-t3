@@ -12,6 +12,7 @@ import { useLoading } from '../../components/Context/LoadingContext'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import AlertModal from '../../components/Modals/AlertModal'
 import { CheckedOutBadge, LocusBadge } from '../../components/collection/LocusBadge'
+import { hasAuthority } from '../../components/security/authorization'
 
 export default function ItemsPage() {
   const [parent] = useAutoAnimate<HTMLDivElement>()
@@ -23,7 +24,7 @@ export default function ItemsPage() {
   const itemsQuery = trpc.useQuery(['items.getAllForCollection', { collectionId }])
   const collectionQuery = trpc.useQuery(['collections.get', { collectionId }])
   const deleteItemMutation = trpc.useMutation('items.delete', {
-    onSuccess: () => queryClient.invalidateQueries('items.getAllForCollection'),
+    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
   })
   const [fuse, setFuse] = useState<Fuse<inferQueryOutput<'items.getAllForCollection'>[number]>>()
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
@@ -72,8 +73,10 @@ export default function ItemsPage() {
   }
 
   useEffect(() => {
-    setCanEdit(session.data?.user?.id === collectionQuery.data?.owner.id)
-  }, [session.data?.user?.id, collectionQuery.data?.owner.id])
+    const owner = collectionQuery.data?.owner.id
+    if (!owner) return setCanEdit(false)
+    setCanEdit(hasAuthority(session.data, 'collection', owner, 'write'))
+  }, [collectionQuery.data?.owner.id, session])
 
   useEffect(() => {
     setLoading(itemsQuery.isLoading)
@@ -125,7 +128,7 @@ export default function ItemsPage() {
         <div ref={parent}>
           {(filteredItems ?? itemsQuery.data)?.map((item) => (
             <div key={item.id}>
-              <div className="flex flex-row">
+              <div className="flex flex-row items-center">
                 {/* <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}> */}
                 <div
                   className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
@@ -170,3 +173,6 @@ export default function ItemsPage() {
     </Main>
   )
 }
+
+// permission cl7wh027e000109la9ewagyf1
+// role cl7wgyzz1000009la1hm94fik
