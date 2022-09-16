@@ -13,9 +13,16 @@ function BadgeContent({ name, amount, children }: { name: string; amount: number
 export function LocusBadge({ name, amount }: { name: string; amount: number }) {
   return (
     <span className="rounded-md text-neutral-500 bg-neutral-900 flex flex-row w-min text-xs md:text-sm">
-      <BadgeContent name={name} amount={amount}>
-        <div className="px-2 rounded-r-md text-neutral-900 bg-neutral-500">{amount}</div>
-      </BadgeContent>
+      {amount ? (
+        <>
+          <div className="px-2 md:rounded-l-md rounded-l-sm">{name}</div>
+          <div className="px-2 rounded-r-md text-neutral-900 bg-neutral-500">{amount}</div>
+        </>
+      ) : (
+        <>
+          <div className="line-through px-2 md:rounded-l-md rounded-sm">{name}</div>
+        </>
+      )}
     </span>
   )
 }

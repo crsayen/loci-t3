@@ -1,41 +1,37 @@
-import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PlusIcon } from '@heroicons/react/20/solid'
+import Fuse from 'fuse.js'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
-import Main from '../../components/Layout/Main'
-import Fuse from 'fuse.js'
-import { inferQueryOutput, trpc } from '../../utils/trpc'
-import AddItemModal from '../../components/Modals/AddItemModal'
-import ConfirmationModal from '../../components/Modals/ConfirmationModal'
-import { useQueryClient } from 'react-query'
-import { useLoading } from '../../components/Context/LoadingContext'
-import { useAutoAnimate } from '@formkit/auto-animate/react'
-import AlertModal from '../../components/Modals/AlertModal'
-import { CheckedOutBadge, LocusBadge } from '../../components/collection/LocusBadge'
-import { WhenAllowed } from '../../components/security/WhenAllowed'
 import { CollectionListItem } from '../../components/collection/CollectionListItem'
+import { MenuOpenProvider } from '../../components/collection/MenuOpenContext'
+import { useLoading } from '../../components/Context/LoadingContext'
+import Main from '../../components/Layout/Main'
+import AddItemModal from '../../components/Modals/AddItemModal'
+import AlertModal from '../../components/Modals/AlertModal'
+import { WhenAllowed } from '../../components/security/WhenAllowed'
+import { inferQueryOutput, trpc } from '../../utils/trpc'
+
+type ItemsQueryOutput = inferQueryOutput<'items.getAllForCollection'>
+type CollectionQueryOutput = inferQueryOutput<'collections.get'>
+
+export type CollectionItem = ItemsQueryOutput[number]
+export type CollectionOwner = CollectionQueryOutput['owner']
 
 export default function ItemsPage() {
-  const [parent] = useAutoAnimate<HTMLDivElement>()
   const { setLoading } = useLoading()
   const [user, setUser] = useState<{
     name: string | null
     id: string
   }>()
   const router = useRouter()
-  const queryClient = useQueryClient()
   const collectionId = router.query.collection as string
   const itemsQuery = trpc.useQuery(['items.getAllForCollection', { collectionId }])
   const collectionQuery = trpc.useQuery(['collections.get', { collectionId }])
-  const deleteItemMutation = trpc.useMutation('items.delete', {
-    onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
-  })
   const [fuse, setFuse] = useState<Fuse<inferQueryOutput<'items.getAllForCollection'>[number]>>()
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
   const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false)
   const [alertModalOpen, setAlertModalOpen] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false)
-  const [itemToDelete, setItemToDelete] = useState<{ name: string; id: string } | undefined>()
 
   const handleFilter = (event: ChangeEvent<HTMLInputElement>) => {
     const filterText = event.target.value
@@ -49,20 +45,6 @@ export default function ItemsPage() {
         return i.item
       })
     )
-  }
-
-  const handleDeleteItem = async (id: string, name: string) => {
-    setItemToDelete({ id, name })
-    setConfirmDeleteOpen(true)
-  }
-
-  const handleConfirm = (confirmed: boolean) => {
-    const { id } = itemToDelete as { id: string }
-    setConfirmDeleteOpen(false)
-    setItemToDelete(undefined)
-    setFilteredItems(undefined)
-    if (!confirmed) return
-    deleteItemMutation.mutate({ itemId: id })
   }
 
   useEffect(() => {
@@ -85,7 +67,6 @@ export default function ItemsPage() {
   return (
     <Main>
       <AlertModal open={alertModalOpen} onClose={() => setAlertModalOpen(false)} message="Nothing here yet!!1" />
-      <ConfirmationModal open={confirmDeleteOpen} onClose={handleConfirm} message={`Delete "${itemToDelete?.name}"?`} />
       <div
         className="-mt-1 absolute mx-auto py-2 z-10 flex flex-row items-end 
       gap-5 justify-start bg-black w-full pr-auto"
@@ -126,11 +107,12 @@ export default function ItemsPage() {
         </div>
       </div>
       <div className="mt-15">
-        <div ref={parent}>
+        <MenuOpenProvider>
           {(filteredItems ?? itemsQuery.data)?.map((item, i) => (
-            <CollectionListItem key={i} owner={user} item={item} handleDelete={handleDeleteItem} />
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            <CollectionListItem key={i} owner={user!} item={item} />
           ))}
-        </div>
+        </MenuOpenProvider>
       </div>
     </Main>
   )
