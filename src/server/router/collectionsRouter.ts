@@ -8,12 +8,15 @@ import {
 } from '../db/repository/collection'
 import { ensureIsResourceOwner } from '../security/authorization'
 import { createRouter } from './utility/context'
+import { notFound } from './utility/ErrorSuppliers'
 
 export const collectionsRouter = createRouter()
   .query('get', {
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {
-      return await getCollection(ctx.prisma, input.collectionId)
+      const collection = await getCollection(ctx.prisma, input.collectionId)
+      if (!collection) throw notFound(`Collection not found with id: ${input.collectionId}`)
+      return collection
     },
   })
   .query('getAll', {

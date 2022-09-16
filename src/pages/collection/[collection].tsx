@@ -7,17 +7,20 @@ import { inferQueryOutput, trpc } from '../../utils/trpc'
 import AddItemModal from '../../components/Modals/AddItemModal'
 import ConfirmationModal from '../../components/Modals/ConfirmationModal'
 import { useQueryClient } from 'react-query'
-import { useSession } from 'next-auth/react'
 import { useLoading } from '../../components/Context/LoadingContext'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import AlertModal from '../../components/Modals/AlertModal'
 import { CheckedOutBadge, LocusBadge } from '../../components/collection/LocusBadge'
-import { hasAuthority } from '../../components/security/authorization'
+import { WhenAllowed } from '../../components/security/WhenAllowed'
+import { CollectionListItem } from '../../components/collection/CollectionListItem'
 
 export default function ItemsPage() {
   const [parent] = useAutoAnimate<HTMLDivElement>()
   const { setLoading } = useLoading()
-  const session = useSession()
+  const [user, setUser] = useState<{
+    name: string | null
+    id: string
+  }>()
   const router = useRouter()
   const queryClient = useQueryClient()
   const collectionId = router.query.collection as string
@@ -33,16 +36,6 @@ export default function ItemsPage() {
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false)
   const [itemToDelete, setItemToDelete] = useState<{ name: string; id: string } | undefined>()
-  const [canEdit, setCanEdit] = useState<boolean>(false)
-
-  useEffect(() => {
-    const show = (itemsQuery?.data?.length ?? 0) > 10
-    setShowSearch(show)
-    if (show) {
-      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'], threshold: 0.8, distance: 100 })
-      setFuse(fuse)
-    }
-  }, [itemsQuery.data])
 
   const handleFilter = (event: ChangeEvent<HTMLInputElement>) => {
     const filterText = event.target.value
@@ -73,22 +66,26 @@ export default function ItemsPage() {
   }
 
   useEffect(() => {
-    const owner = collectionQuery.data?.owner.id
-    if (!owner) return setCanEdit(false)
-    setCanEdit(hasAuthority(session.data, 'collection', owner, 'write'))
-  }, [collectionQuery.data?.owner.id, session])
+    const show = (itemsQuery?.data?.length ?? 0) > 10
+    setShowSearch(show)
+    if (show) {
+      const fuse = new Fuse(itemsQuery.data ?? [], { keys: ['name', 'locus.name'], threshold: 0.8, distance: 100 })
+      setFuse(fuse)
+    }
+  }, [itemsQuery.data])
 
   useEffect(() => {
     setLoading(itemsQuery.isLoading)
   }, [itemsQuery.isLoading, setLoading])
 
+  useEffect(() => {
+    setUser(collectionQuery.data?.owner)
+  }, [collectionQuery.data?.owner])
+
   return (
     <Main>
       <AlertModal open={alertModalOpen} onClose={() => setAlertModalOpen(false)} message="Nothing here yet!!1" />
       <ConfirmationModal open={confirmDeleteOpen} onClose={handleConfirm} message={`Delete "${itemToDelete?.name}"?`} />
-      {canEdit && (
-        <AddItemModal open={addItemModalOpen} collectionId={collectionId} onClose={() => setAddItemModalOpen(false)} />
-      )}
       <div
         className="-mt-1 absolute mx-auto py-2 z-10 flex flex-row items-end 
       gap-5 justify-start bg-black w-full pr-auto"
@@ -107,7 +104,12 @@ export default function ItemsPage() {
             </div>
           )}
           <div>
-            {canEdit && (
+            <WhenAllowed resourceOwner={user?.id} resourceType="collection" actionType="write">
+              <AddItemModal
+                open={addItemModalOpen}
+                collectionId={collectionId}
+                onClose={() => setAddItemModalOpen(false)}
+              />
               <button
                 type="button"
                 className="inline-flex items-center p-1 border border-transparent 
@@ -115,64 +117,21 @@ export default function ItemsPage() {
               hover:bg-neutral-300 focus:outline-none focus:ring-2 
               focus:ring-offset-1 focus:ring-neutral-500 disabled:outline-none 
               disabled:hover:bg-neutral-500 disabled:bg-neutral-500"
-                disabled={!canEdit}
-                onClick={canEdit ? () => setAddItemModalOpen(true) : undefined}
+                onClick={() => setAddItemModalOpen(true)}
               >
                 <PlusIcon className="h-3 w-3" stroke="#000000" />
               </button>
-            )}
+            </WhenAllowed>
           </div>
         </div>
       </div>
       <div className="mt-15">
         <div ref={parent}>
-          {(filteredItems ?? itemsQuery.data)?.map((item) => (
-            <div key={item.id}>
-              <div className="flex flex-row items-center">
-                {/* <Link href={`${env.NEXT_PUBLIC_BASE_URI}/items/${item.id}`}> */}
-                <div
-                  className="whitespace-nowrap overflow-hidden pl-4 py-2 w-full 
-                  cursor-pointer hover:bg-gradient-to-r md:items-center gap-1
-                  hover:to-black hover:from-neutral-900 flex flex-col md:flex-row text-sm md:text-base"
-                  onClick={() => setAlertModalOpen(true)}
-                >
-                  <p>{item.name}</p>
-                  <div className="flex flex-row md:items-center">
-                    {/* <ArrowSmallRightIcon className="text-violet-300 h-4 w-4 hidden md:block" /> */}
-                    {item.amountCheckedOut > 0 && (
-                      <div className="pr-2">
-                        <CheckedOutBadge amount={item.amount - 1} />
-                      </div>
-                    )}
-                    <LocusBadge name={item.locus.name} amount={item.amount} />
-                  </div>
-                </div>
-                {canEdit && (
-                  <div className=" ml-3 mt-2">
-                    <button
-                      type="button"
-                      className="inline-flex items-center p-1 rounded-full shadow-sm bg-black 
-                    hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-1 
-                    focus:ring-neutral-800"
-                      onClick={() => handleDeleteItem(item.id, item.name)}
-                    >
-                      <XMarkIcon className="colorpop h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-neutral-800" />
-                </div>
-              </div>
-            </div>
+          {(filteredItems ?? itemsQuery.data)?.map((item, i) => (
+            <CollectionListItem key={i} owner={user} item={item} handleDelete={handleDeleteItem} />
           ))}
         </div>
       </div>
     </Main>
   )
 }
-
-// permission cl7wh027e000109la9ewagyf1
-// role cl7wgyzz1000009la1hm94fik

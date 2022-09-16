@@ -6,3 +6,10 @@ export const lacksAuthority = () => {
     message: 'Caller lacks the required permission(s)',
   })
 }
+
+export const notFound = (message: string) => {
+  return new TRPCError({
+    code: 'NOT_FOUND',
+    message,
+  })
+}

@@ -1,11 +1,14 @@
 import { Session } from 'next-auth'
 
+export type ResourceType = 'collection' | 'user' | 'item'
+export type ActionType = 'write'
+
 // TODO: make room for 'public' designation maybe?
 export function hasAuthority(
   session: Session | null,
-  resource: string,
+  resource: ResourceType,
   owner: string,
-  action: string
+  action: ActionType
 ) {
   if (!session) return false
   if (session?.user?.roles.includes(owner)) return true
