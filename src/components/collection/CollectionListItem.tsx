@@ -1,20 +1,28 @@
+import { useSession } from 'next-auth/react'
+import { useEffect, useState } from 'react'
 import { CollectionItem, CollectionOwner } from '../../pages/collection/[collection]'
+import UpdateLocusModal from '../Modals/UpdateLocusModal'
+import { hasAuthority } from '../security/authorization'
+import { WhenAllowed } from '../security/WhenAllowed'
 import { CheckoutMenu } from './CheckoutMenu'
 import { DeleteItemButton } from './DeleteItemButton'
 import { CheckedOutBadge, LocusBadge } from './LocusBadge'
 import { useMenuOpen } from './MenuOpenContext'
 
 interface Props {
+  collectionId: string
   item: CollectionItem
-  owner: CollectionOwner
+  ownerId: string
 }
 
-export function CollectionListItem({ item, owner }: Props) {
+export function CollectionListItem({ collectionId, item, ownerId }: Props) {
+  const session = useSession()
   const { hasCheckoutMenuOpen, sethasCheckoutMenuOpen } = useMenuOpen()
+  const [moveModalOpen, setMoveModalOpen] = useState(false)
 
   const handleClick = () => {
+    if (!hasAuthority(session.data, 'collection', ownerId, 'write')) return
     if (hasCheckoutMenuOpen === item.id) sethasCheckoutMenuOpen(undefined)
-    else if (hasCheckoutMenuOpen) sethasCheckoutMenuOpen(undefined)
     else sethasCheckoutMenuOpen(item.id)
   }
 
@@ -24,8 +32,21 @@ export function CollectionListItem({ item, owner }: Props) {
     return true
   }
 
+  const handleLocusBadgeClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    event.stopPropagation()
+    setMoveModalOpen(true)
+  }
+
   return (
-    <div key={item.id} className={`${anotherItemMenuOpen() ? 'blur-sm' : ''}`}>
+    <div key={item.id} className={`${anotherItemMenuOpen() ? 'text-neutral-600' : ''}`}>
+      <UpdateLocusModal
+        ownerId={ownerId}
+        collectionId={collectionId}
+        itemId={item.id}
+        currentLocus={item.locus}
+        open={moveModalOpen}
+        onClose={() => setMoveModalOpen(false)}
+      />
       <div className={'flex flex-col w-full'}>
         <div className="flex flex-row items-center w-full">
           <div
@@ -41,16 +62,20 @@ export function CollectionListItem({ item, owner }: Props) {
                   <CheckedOutBadge amount={item.amountCheckedOut} />
                 </div>
               )}
-              <LocusBadge name={item.locus.name} amount={item.amount} />
+              <div onClick={handleLocusBadgeClick}>
+                <LocusBadge name={item.locus.name} amount={item.amount} />
+              </div>
             </div>
           </div>
-          <DeleteItemButton item={item} owner={owner} />
+          <DeleteItemButton item={item} ownerId={ownerId} />
         </div>
-        <CheckoutMenu
-          show={hasCheckoutMenuOpen === item.id}
-          item={item}
-          handleClose={() => sethasCheckoutMenuOpen(undefined)}
-        />
+        <WhenAllowed resourceOwner={ownerId} resourceType="collection" actionType="write">
+          <CheckoutMenu
+            show={hasCheckoutMenuOpen === item.id}
+            item={item}
+            handleClose={() => sethasCheckoutMenuOpen(undefined)}
+          />
+        </WhenAllowed>
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

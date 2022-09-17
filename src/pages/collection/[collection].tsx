@@ -6,7 +6,7 @@ import { CollectionListItem } from '../../components/collection/CollectionListIt
 import { MenuOpenProvider } from '../../components/collection/MenuOpenContext'
 import { useLoading } from '../../components/Context/LoadingContext'
 import Main from '../../components/Layout/Main'
-import AddItemModal from '../../components/Modals/AddItemModal'
+import AddItemsModal from '../../components/Modals/AddItemsModal'
 import AlertModal from '../../components/Modals/AlertModal'
 import { WhenAllowed } from '../../components/security/WhenAllowed'
 import { inferQueryOutput, trpc } from '../../utils/trpc'
@@ -86,7 +86,7 @@ export default function ItemsPage() {
           )}
           <div>
             <WhenAllowed resourceOwner={user?.id} resourceType="collection" actionType="write">
-              <AddItemModal
+              <AddItemsModal
                 open={addItemModalOpen}
                 collectionId={collectionId}
                 onClose={() => setAddItemModalOpen(false)}
@@ -110,7 +110,7 @@ export default function ItemsPage() {
         <MenuOpenProvider>
           {(filteredItems ?? itemsQuery.data)?.map((item, i) => (
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            <CollectionListItem key={i} owner={user!} item={item} />
+            <CollectionListItem key={i} collectionId={collectionId} ownerId={user?.id ?? ''} item={item} />
           ))}
         </MenuOpenProvider>
       </div>

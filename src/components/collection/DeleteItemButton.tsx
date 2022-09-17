@@ -9,10 +9,10 @@ import { Spinner } from './Spinner'
 
 interface Props {
   item: CollectionItem
-  owner: CollectionOwner
+  ownerId: string
 }
 
-export function DeleteItemButton({ item, owner }: Props) {
+export function DeleteItemButton({ item, ownerId }: Props) {
   const queryClient = useQueryClient()
   const [confirmDelete, setConfirmDelete] = useState<boolean>(false)
   const deleteItemMutation = trpc.useMutation('items.delete', {
@@ -29,7 +29,7 @@ export function DeleteItemButton({ item, owner }: Props) {
   if (deleteItemMutation.isLoading) return <Spinner />
 
   return (
-    <WhenAllowed resourceOwner={owner?.id} resourceType="collection" actionType="write">
+    <WhenAllowed resourceOwner={ownerId} resourceType="collection" actionType="write">
       <div className="ml-3 mt-2">
         {confirmDelete ? (
           <div className="flex flex-row gap-2">

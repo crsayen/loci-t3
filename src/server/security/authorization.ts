@@ -26,6 +26,8 @@ export async function ensureIsResourceOwner(
   resourceId: string,
   resourceType: ResourceType
 ) {
+  console.log('ensureIsResourceOwner:', resourceId, resourceType)
   const isOwner = await isResourceOwner(ctx, resourceId, resourceType)
+  console.log('ensureIsResourceOwner: isOwner', isOwner)
   if (!isOwner) throw lacksAuthority()
 }

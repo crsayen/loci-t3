@@ -4,6 +4,7 @@ import {
   getAllItemsFromCollection,
   getAllItemsFromLocus,
   updateItem,
+  updateItemLocus,
 } from '../db/repository/item'
 import { ensureIsResourceOwner } from '../security/authorization'
 import { createRouter } from './utility/context'
@@ -43,5 +44,16 @@ export const itemsRouter = createRouter()
     async resolve({ ctx, input }) {
       await ensureIsResourceOwner(ctx, input.itemId, 'item')
       return await deleteItem(ctx.prisma, input.itemId)
+    },
+  })
+  .mutation('move', {
+    input: z.object({
+      itemId: z.string(),
+      locusId: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      await ensureIsResourceOwner(ctx, input.itemId, 'item')
+      await ensureIsResourceOwner(ctx, input.locusId, 'locus')
+      return await updateItemLocus(ctx.prisma, input.itemId, input.locusId)
     },
   })

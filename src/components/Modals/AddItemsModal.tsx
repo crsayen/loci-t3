@@ -28,7 +28,7 @@ const newItem = (): AddItemData => {
   }
 }
 
-export default function AddItemModal({ collectionId, open, onClose }: Props) {
+export default function AddItemsModal({ collectionId, open, onClose }: Props) {
   const queryClient = useQueryClient()
   const lociQuery = trpc.useQuery(['loci.getAllForCollection', { collectionId }])
   const addItemsMutation = trpc.useMutation('loci.addItems', {

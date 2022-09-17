@@ -29,3 +29,10 @@ export async function updateItem(prisma: PrismaClient, id: string, data: Prisma.
 export async function deleteItem(prisma: PrismaClient, id: string) {
   return await prisma.item.delete({ where: { id } })
 }
+
+export async function updateItemLocus(prisma: PrismaClient, itemId: string, locusId: string) {
+  return await prisma.item.update({
+    where: { id: itemId },
+    data: { locus: { connect: { id: locusId } } },
+  })
+}
