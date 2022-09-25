@@ -255,6 +255,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                     className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
                     onClick={locus ? handleSave : undefined}
                   >
+                    {/* TODO: this should say 'add items to _' or 'create _ and add items' depending on where the locus has an id*/}
                     Save
                   </button>
                 </div>
