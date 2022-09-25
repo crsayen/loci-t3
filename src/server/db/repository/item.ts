@@ -11,6 +11,7 @@ export async function getAllItemsFromCollection(prisma: PrismaClient, collection
 async function getAllItemsWhere(prisma: PrismaClient, where: Prisma.ItemWhereInput) {
   return await prisma.item.findMany({
     where,
+    orderBy: [{ amountCheckedOut: 'desc' }, { locus: { name: 'asc' } }, { name: 'asc' }],
     select: {
       name: true,
       id: true,

@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { ChangeEvent, Fragment, useState } from 'react'
+import { ChangeEvent, Fragment, KeyboardEventHandler, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { trpc } from '../../utils/trpc'
 import SearchBox from '../Elements/SearchBox'
@@ -64,6 +64,13 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
     setItems([...items.slice(0, i), { ...oldItem, descriptionOpen: !oldItem.descriptionOpen }, ...items.slice(i + 1)])
   }
 
+  // TODO: move this to a place
+  const globalHandleEnter: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+      handleSave()
+    }
+  }
+
   const handleSave = async () => {
     const locusItems = items
       .filter((i) => i.name)
@@ -87,7 +94,6 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
         items: locusItems,
       })
     }
-    1
     onClose()
   }
 
@@ -117,7 +123,10 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative bg-black rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-sm sm:w-full sm:p-6">
+              <Dialog.Panel
+                onKeyDown={globalHandleEnter}
+                className="relative bg-black rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-sm sm:w-full sm:p-6"
+              >
                 <div>
                   <label htmlFor="locus" className="block text-sm font-medium text-white">
                     Locus

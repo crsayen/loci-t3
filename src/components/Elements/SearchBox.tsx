@@ -26,26 +26,26 @@ export default function Search(props: {
           return item.name.toLowerCase().includes(query.toLowerCase())
         })
 
+  function handleChange(name: string) {
+    const value = { name, id: nameToIdMap.get(name) as string }
+    setSelectedItem(value)
+    props.onSelect(value)
+  }
+
   return (
-    <Combobox
-      as="div"
-      value={selectedItem?.name}
-      onChange={(name: string) => {
-        const value = { name, id: nameToIdMap.get(name) as string }
-        setSelectedItem(value)
-        props.onSelect(value)
-      }}
-    >
+    <Combobox as="div" value={selectedItem?.name} onChange={handleChange}>
       <div className="relative">
         <Combobox.Input
           className={inputStyle()}
           placeholder={props.placeholder ?? 'Search'}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            props.onTextChange && props.onTextChange(event.target.value)
+            const name = event.target.value
+            handleChange(name)
+            props.onTextChange && props.onTextChange(name)
             setQuery(event.target.value)
           }}
           displayValue={(item: string) => {
-            return item as string
+            return item
           }}
         />
 

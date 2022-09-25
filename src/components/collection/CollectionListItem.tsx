@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
-import { CollectionItem, CollectionOwner } from '../../pages/collection/[collection]'
+import { useState } from 'react'
+import { CollectionItem } from '../../pages/collection/[collection]'
 import UpdateLocusModal from '../Modals/UpdateLocusModal'
 import { hasAuthority } from '../security/authorization'
 import { WhenAllowed } from '../security/WhenAllowed'

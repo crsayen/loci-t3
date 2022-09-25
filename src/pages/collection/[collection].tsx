@@ -7,7 +7,6 @@ import { MenuOpenProvider } from '../../components/collection/MenuOpenContext'
 import { useLoading } from '../../components/Context/LoadingContext'
 import Main from '../../components/Layout/Main'
 import AddItemsModal from '../../components/Modals/AddItemsModal'
-import AlertModal from '../../components/Modals/AlertModal'
 import { WhenAllowed } from '../../components/security/WhenAllowed'
 import { inferQueryOutput, trpc } from '../../utils/trpc'
 
@@ -30,7 +29,6 @@ export default function ItemsPage() {
   const [fuse, setFuse] = useState<Fuse<inferQueryOutput<'items.getAllForCollection'>[number]>>()
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
   const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false)
-  const [alertModalOpen, setAlertModalOpen] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
 
   const handleFilter = (event: ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +64,6 @@ export default function ItemsPage() {
 
   return (
     <Main>
-      <AlertModal open={alertModalOpen} onClose={() => setAlertModalOpen(false)} message="Nothing here yet!!1" />
       <div
         className="-mt-1 absolute mx-auto py-2 z-10 flex flex-row items-end 
       gap-5 justify-start bg-black w-full pr-auto"
