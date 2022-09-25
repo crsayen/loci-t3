@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { ChangeEvent, Fragment, KeyboardEventHandler, useState } from 'react'
+import { ChangeEvent, Fragment, KeyboardEventHandler, useEffect, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { trpc } from '../../utils/trpc'
 import SearchBox from '../Elements/SearchBox'
@@ -97,6 +97,13 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
     onClose()
   }
 
+  useEffect(() => {
+    if (open) {
+      setItems([newItem()])
+      setLocus(undefined)
+    }
+  }, [open])
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -154,6 +161,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                                 name={`item-${i}`}
                                 id={`item-${i}`}
                                 value={item.name}
+                                autoComplete="off"
                                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                   handleEditItem(i, 'name', event.target.value)
                                 }
@@ -172,6 +180,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                                 name={`item-amount-${i}`}
                                 id={`item-amount-${i}`}
                                 value={item.amount}
+                                autoComplete="off"
                                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                   handleEditItem(i, 'amount', event.target.value)
                                 }
@@ -202,6 +211,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                                   name={`item-description-${i}`}
                                   id={`item-description-${i}`}
                                   value={item.description}
+                                  autoComplete="off"
                                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                     handleEditItem(i, 'description', event.target.value)
                                   }
