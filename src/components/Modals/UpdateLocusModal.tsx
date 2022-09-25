@@ -76,7 +76,7 @@ export default function UpdateLocusModal({ ownerId, collectionId, itemId, curren
                     <SearchBox
                       items={lociQuery?.data?.map((i) => ({ name: i.name, id: i.id })) ?? []}
                       onSelect={setLocus}
-                      onTextChange={(name) => setLocus({ name })}
+                      onTextChange={(value) => setLocus(value)}
                       placeholder={currentLocus.name}
                     />
                   </div>

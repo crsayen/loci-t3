@@ -141,7 +141,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                   <SearchBox
                     items={lociQuery?.data?.map((i) => ({ name: i.name, id: i.id })) ?? []}
                     onSelect={setLocus}
-                    onTextChange={(name) => setLocus({ name })}
+                    onTextChange={(value) => setLocus(value)}
                     placeholder="Where?"
                   />
                 </div>

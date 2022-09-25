@@ -12,7 +12,7 @@ type Selection = { name: string; id: string }
 export default function Search(props: {
   items: Array<{ name: string; id: string }>
   onSelect: (selection: Selection) => void
-  onTextChange?: (text: string) => void
+  onTextChange?: (value: { name: string; id: string }) => void
   placeholder?: string
 }) {
   const [query, setQuery] = useState('')
@@ -29,6 +29,7 @@ export default function Search(props: {
   function handleChange(name: string) {
     const value = { name, id: nameToIdMap.get(name) as string }
     setSelectedItem(value)
+    props.onTextChange && props.onTextChange(value)
     props.onSelect(value)
   }
 
@@ -41,7 +42,6 @@ export default function Search(props: {
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const name = event.target.value
             handleChange(name)
-            props.onTextChange && props.onTextChange(name)
             setQuery(event.target.value)
           }}
           displayValue={(item: string) => {

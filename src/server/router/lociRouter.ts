@@ -43,3 +43,15 @@ export const lociRouter = createRouter()
       return await createLoci(ctx.prisma, input.collectionId, input.name, input.items)
     },
   })
+// power brick barrel 12v 1a
+// macbook charger 95w usb c
+// power brick barrel 12v 2a
+// battery charger 8x aa aaa
+// battery charger nitecore
+// power brick barrel 9v 1a
+// power brick barrel 12v 0.15a
+// power brick barrel 9v 0.5a
+// power brick barrel 15v 0.2a
+// power brick barrel 5v 2.1a
+// power brick barrel 24v 4.5a
+// power brick barrel 19v 3.95a
