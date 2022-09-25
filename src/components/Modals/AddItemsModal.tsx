@@ -38,7 +38,8 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
     onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
   })
   const [locus, setLocus] = useState<{ name: string; id?: string } | undefined>()
-  const [items, setItems] = useState<Array<AddItemData>>([newItem()])
+  const [items, setItems] = useState<Array<AddItemData>>([])
+  const [saveDisabled, setSaveDisabled] = useState(true)
 
   const handleEditItem = (i: number, property: keyof AddItemData, value: string) => {
     const oldItem = items[i] as AddItemData
@@ -66,7 +67,7 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
 
   // TODO: move this to a place
   const globalHandleEnter: KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    if (e.key === 'Enter' && e.target instanceof HTMLInputElement && !saveDisabled) {
       handleSave()
     }
   }
@@ -99,10 +100,14 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
 
   useEffect(() => {
     if (open) {
-      setItems([newItem()])
+      setItems([])
       setLocus(undefined)
     }
   }, [open])
+
+  useEffect(() => {
+    setSaveDisabled(!locus || (items.length === 0 && !!locus?.id))
+  }, [locus, items])
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -252,11 +257,24 @@ export default function AddItemsModal({ collectionId, open, onClose }: Props) {
                 <div className="mt-5 sm:mt-6">
                   <button
                     type="button"
-                    className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
+                    disabled={saveDisabled}
+                    className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 disabled:bg-neutral-800 text-base font-medium text-white disabled:text-neutral-900 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
                     onClick={locus ? handleSave : undefined}
                   >
-                    {/* TODO: this should say 'add items to _' or 'create _ and add items' depending on where the locus has an id*/}
-                    Save
+                    {saveDisabled ? (
+                      'Save'
+                    ) : locus?.id ? (
+                      <>
+                        <p>Add items to</p>
+                        <p className="mx-0.5 px-0.5 font-bold bg-black bg-opacity-20 rounded-sm">{`${locus?.name}`}</p>{' '}
+                      </>
+                    ) : (
+                      <>
+                        <p>Create</p>
+                        <p className="mx-0.5 px-0.5 font-bold bg-black bg-opacity-20 rounded-sm">{` ${locus?.name} `}</p>
+                        {!!items.length && <p>and add items</p>}
+                      </>
+                    )}
                   </button>
                 </div>
               </Dialog.Panel>
