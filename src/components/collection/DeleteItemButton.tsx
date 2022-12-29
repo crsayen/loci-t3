@@ -1,7 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useState } from 'react'
 import { useQueryClient } from 'react-query'
-import { CollectionItem, CollectionOwner } from '../../pages/collection/[collection]'
+import { CollectionItem } from '../../pages/collection/[collection]'
 import { trpc } from '../../utils/trpc'
 import Button from '../Elements/Button'
 import { WhenAllowed } from '../security/WhenAllowed'

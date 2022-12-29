@@ -35,12 +35,12 @@ export const itemsRouter = createRouter()
       let parent: string | null | undefined = null
       const ancestors: string[] = []
       do {
-        const parent = await getLocusLocus(currentLocus)
+        parent = await getLocusLocus(currentLocus)
         if (parent) {
           currentLocus = parent
           ancestors.push(parent)
         }
-      } while (![null, undefined].includes(parent))
+      } while (parent)
       return ancestors
     },
   })
