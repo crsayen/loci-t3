@@ -10,13 +10,15 @@ import { Spinner } from './Spinner'
 interface Props {
   show: boolean
   item: CollectionItem
+  collectionId: string
   handleClose: () => void
 }
 
-export function CheckoutMenu({ show, item, handleClose }: Props) {
+export function CheckoutMenu({ show, item, collectionId, handleClose }: Props) {
   const [numberCheckedOut, setNumberCheckedOut] = useState<number>(item.amountCheckedOut)
   const [inputValue, setInputValue] = useState<string>(item.amountCheckedOut.toString())
   const queryClient = useQueryClient()
+  const {isLoading, data} = trpc.useQuery(['items.getAncestorLoci', {collectionId, locusName: item.locus.name }])
   const updateItemQuery = trpc.useMutation('items.update', {
     onSuccess: () => queryClient.invalidateQueries(['items.getAllForCollection']),
   })
@@ -59,6 +61,9 @@ export function CheckoutMenu({ show, item, handleClose }: Props) {
 
   return (
     <div className="bg-black h-40 sm:h-16">
+        <div className="flex flex-row sm:text-left pb-3 sm:pb-0 w-1/3 sm:pl-4 text-neutral-500">
+          {data?.map((locusName) => (<div key={locusName}>{`${locusName}`}</div>) ?? [(<></>)])}  
+        </div>
       <div className="flex flex-col sm:flex-row w-full py-2 gap-2 items-center">
         <div className="font-bold text-center sm:text-left pb-3 sm:pb-0 w-1/3 sm:pl-4">CHECKOUT</div>
         <div className="flex flex-row gap-2">

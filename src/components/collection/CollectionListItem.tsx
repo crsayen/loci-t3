@@ -73,6 +73,7 @@ export function CollectionListItem({ collectionId, item, ownerId }: Props) {
           <CheckoutMenu
             show={hasCheckoutMenuOpen === item.id}
             item={item}
+            collectionId={collectionId}
             handleClose={() => sethasCheckoutMenuOpen(undefined)}
           />
         </WhenAllowed>

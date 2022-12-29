@@ -8,6 +8,10 @@ export async function getAllItemsFromCollection(prisma: PrismaClient, collection
   return await getAllItemsWhere(prisma, { locus: { collectionId } })
 }
 
+export async function getItemsFromCollectionByName(prisma: PrismaClient, collectionId: string, name: string) {
+  return await getAllItemsWhere(prisma, {locus: { collectionId }, name })
+}
+
 async function getAllItemsWhere(prisma: PrismaClient, where: Prisma.ItemWhereInput) {
   return await prisma.item.findMany({
     where,

@@ -3,6 +3,7 @@ import {
   deleteItem,
   getAllItemsFromCollection,
   getAllItemsFromLocus,
+  getItemsFromCollectionByName,
   updateItem,
   updateItemLocus,
 } from '../db/repository/item'
@@ -20,6 +21,27 @@ export const itemsRouter = createRouter()
     input: z.object({ collectionId: z.string() }),
     async resolve({ ctx, input }) {
       return await getAllItemsFromCollection(ctx.prisma, input.collectionId)
+    },
+  })
+  .query('getAncestorLoci', {
+    input: z.object({ collectionId: z.string(), locusName: z.string() }),
+    async resolve({ ctx, input }) {
+      const getLocusLocus = async (locus: string) => {
+        const locusItems = await getItemsFromCollectionByName(ctx.prisma, input.collectionId, locus)
+        if (locusItems.length == 0) return null
+        return locusItems[0]?.locus.name
+      }
+      let currentLocus = input.locusName
+      let parent: string | null | undefined = null
+      const ancestors: string[] = []
+      do {
+        const parent = await getLocusLocus(currentLocus)
+        if (parent) {
+          currentLocus = parent
+          ancestors.push(parent)
+        }
+      } while (![null, undefined].includes(parent))
+      return ancestors
     },
   })
   .mutation('update', {
