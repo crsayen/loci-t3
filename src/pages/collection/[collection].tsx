@@ -1,7 +1,7 @@
 import { PlusIcon } from '@heroicons/react/20/solid'
 import Fuse from 'fuse.js'
 import { useRouter } from 'next/router'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { CollectionListItem } from '../../components/collection/CollectionListItem'
 import { MenuOpenProvider } from '../../components/collection/MenuOpenContext'
 import { useLoading } from '../../components/Context/LoadingContext'
@@ -30,10 +30,21 @@ export default function ItemsPage() {
   const [filteredItems, setFilteredItems] = useState<inferQueryOutput<'items.getAllForCollection'>>()
   const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
+  const divRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToTop = () => {
+    if (divRef.current !== null) {
+      divRef.current.scroll({
+        top: 0,
+        behavior: "smooth"
+      })
+    }
+  }
 
   const handleFilter = (event: ChangeEvent<HTMLInputElement>) => {
     const filterText = event.target.value
     if (filterText === '') return setFilteredItems(undefined)
+    scrollToTop()
     const result = fuse?.search(filterText)
     if (!result) {
       throw 'Error filtering items'
@@ -44,6 +55,8 @@ export default function ItemsPage() {
       })
     )
   }
+
+
 
   useEffect(() => {
     const show = (itemsQuery?.data?.length ?? 0) > 10
@@ -103,7 +116,7 @@ export default function ItemsPage() {
           </div>
         </div>
       </div>
-      <div className="mt-15">
+      <div className="mt-15" ref={divRef}>
         <MenuOpenProvider>
           {(filteredItems ?? itemsQuery.data)?.map((item, i) => (
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

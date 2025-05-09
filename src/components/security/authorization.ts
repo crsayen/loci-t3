@@ -15,3 +15,6 @@ export function hasAuthority(
   if (session?.user?.permissions.includes(`${resource}.any.${action}`)) return true
   return false
 }
+
+// shea cmah7llic09520djrcnwfawmt
+// chris cl7jra7e90024vxrn46syke5d
